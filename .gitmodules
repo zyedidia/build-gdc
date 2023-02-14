@@ -1,3 +1,0 @@
-[submodule "build-gcc"]
-	path = build-gcc
-	url = https://github.com/zyedidia/build-gcc
