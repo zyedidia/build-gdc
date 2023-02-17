@@ -1,0 +1,43 @@
+name: Build
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+
+jobs:
+  publish:
+    strategy:
+      matrix:
+        runner: [ubuntu-latest, macos-latest]
+        include:
+          - runner: ubuntu-latest
+            os: linux
+            tar: tar
+          - runner: macos-latest
+            os: macos
+            tar: gtar
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: GNU Tar on Mac
+        if: matrix.os == 'macos'
+        run: brew install gnu-tar
+
+      - name: Download
+        run: |
+          ./download.sh
+      - name: Build
+        run: |
+          ./build-gdc.sh aarch64-none-elf; ./build-gdc.sh riscv64-unknown-elf
+
+      - name: Package
+        run: |
+          ${{ matrix.tar }} -czf gnu-aarch64-none-elf-${{ matrix.os }}.tar.gz aarch64-none-elf
+          ${{ matrix.tar }} -czf gnu-riscv64-unknown-elf-${{ matrix.os }}.tar.gz riscv64-unknown-elf
+      - name: Upload Binaries
+        uses: AButler/upload-release-assets@v2.0
+        with:
+          files: gnu-*.tar.gz
+          repo-token: ${{ secrets.GITHUB_TOKEN }}

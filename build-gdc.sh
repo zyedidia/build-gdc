@@ -18,12 +18,6 @@ export PREFIX="$WORK_DIR/gnu-$TARGET"
 export PATH="$PREFIX/bin:$PATH"
 export OPT_FLAGS="-O3 -pipe -ffunction-sections -fdata-sections"
 
-download_resources() {
-  git clone git://sourceware.org/git/binutils-gdb.git -b master binutils --depth=1
-  git clone git://gcc.gnu.org/git/gcc.git -b master gcc --depth=1
-}
-
-
 build_binutils() {
   cd "$WORK_DIR"
   mkdir build-binutils
@@ -39,6 +33,7 @@ build_binutils() {
   make -j$(nproc --all)
   make install -j$(nproc --all)
   cd ../
+  rm -rf build-binutils
 }
 
 build_gcc() {
@@ -76,8 +71,9 @@ build_gcc() {
   make install-gcc -j$(nproc --all)
   make install-target-libgcc -j$(nproc --all)
   echo "Built GCC!"
+  cd ..
+  rm -rf build-gcc
 }
 
-download_resources
 build_binutils
 build_gcc
