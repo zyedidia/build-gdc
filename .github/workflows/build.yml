@@ -23,7 +23,9 @@ jobs:
 
       - name: macos install prerequisites
         if: matrix.os == 'macos'
-        run: brew reinstall gcc
+        run: |
+          brew reinstall gcc
+          which gdc
       - name: ubuntu install prerequisites
         if: matrix.os == 'linux'
         run: sudo apt install gdc
