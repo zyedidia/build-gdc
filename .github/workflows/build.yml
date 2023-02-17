@@ -9,23 +9,21 @@ jobs:
   publish:
     strategy:
       matrix:
-        runner: [ubuntu-latest]
+        runner: [ubuntu-latest, macos-latest]
         include:
           - runner: ubuntu-latest
             os: linux
             tar: tar
-          # - runner: macos-latest
-          #   os: macos
-          #   tar: gtar
+          - runner: macos-latest
+            os: macos
+            tar: gtar
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v3
 
       - name: macos install prerequisites
         if: matrix.os == 'macos'
-        run: |
-          brew install gnu-tar
-          brew reinstall gcc
+        run: brew reinstall gcc
       - name: ubuntu install prerequisites
         if: matrix.os == 'linux'
         run: sudo apt install gdc
