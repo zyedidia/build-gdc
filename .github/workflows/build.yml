@@ -21,9 +21,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: GNU Tar on Mac
+      - name: macos: install prerequisites
         if: matrix.os == 'macos'
-        run: brew install gnu-tar
+        run: brew install gnu-tar gcc
+      - name: ubuntu: install prerequisites
+        if: matrix.os == 'ubuntu'
+        run: sudo apt install gdc
 
       - name: Download
         run: |
