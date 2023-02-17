@@ -75,5 +75,5 @@ build_gcc() {
   rm -rf build-gcc
 }
 
-build_binutils
 build_gcc
+build_binutils
