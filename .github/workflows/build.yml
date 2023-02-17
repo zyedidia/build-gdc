@@ -54,7 +54,7 @@ jobs:
           ${{ matrix.tar }} -czf gnu-aarch64-none-elf-${{ matrix.os }}.tar.gz gnu-aarch64-none-elf
           ${{ matrix.tar }} -czf gnu-riscv64-unknown-elf-${{ matrix.os }}.tar.gz gnu-riscv64-unknown-elf
       - name: Upload Binaries
-        uses: AButler/upload-release-assets@v2.0
+        uses: AButler/upload-release-assets@v2.0.2
         with:
           files: gnu-*.tar.gz
           repo-token: ${{ secrets.GITHUB_TOKEN }}
