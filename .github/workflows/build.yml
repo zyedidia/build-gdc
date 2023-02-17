@@ -25,11 +25,17 @@ jobs:
         if: matrix.os == 'macos'
         run: |
           brew install zlib texinfo gmp mpfr libmpc gnu-sed gawk isl expat
+          brew cleanup
           brew reinstall gcc
-          which gdc-12
+          export PATH=/usr/local/opt/texinfo/bin:$PATH
+      - name: verify gdc
+        if: matrix.os == 'macos'
+        run: which gdc-12
+      - name: rename gdc
+        if: matrix.os == 'macos'
+        run: |
           ln -s /usr/local/bin/gdc-12 /usr/local/bin/gdc
           which gdc
-          export PATH=/usr/local/opt/texinfo/bin:$PATH
       - name: ubuntu install prerequisites
         if: matrix.os == 'linux'
         run: sudo apt-get install gdc libgmp-dev libmpc-dev libmpfr-dev binutils-dev build-essential -y
