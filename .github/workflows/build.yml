@@ -14,9 +14,9 @@ jobs:
           - runner: ubuntu-latest
             os: linux
             tar: tar
-          - runner: macos-latest
-            os: macos
-            tar: gtar
+          # - runner: macos-latest
+          #   os: macos
+          #   tar: gtar
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v3
