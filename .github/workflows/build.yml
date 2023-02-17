@@ -9,14 +9,14 @@ jobs:
   publish:
     strategy:
       matrix:
-        runner: [ubuntu-latest]
+        runner: [ubuntu-latest, macos-latest]
         include:
           - runner: ubuntu-latest
             os: linux
             tar: tar
-          # - runner: macos-latest
-          #   os: macos
-          #   tar: gtar
+          - runner: macos-latest
+            os: macos
+            tar: gtar
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v3
@@ -24,18 +24,24 @@ jobs:
       - name: macos install prerequisites
         if: matrix.os == 'macos'
         run: |
+          brew install zlib texinfo gmp mpfr libmpc gnu-sed gawk isl expat
           brew reinstall gcc
+          which gdc-12
+          ln -s /usr/local/bin/gdc-12 /usr/local/bin/gdc
           which gdc
+          export PATH=/usr/local/opt/texinfo/bin:$PATH
       - name: ubuntu install prerequisites
         if: matrix.os == 'linux'
         run: sudo apt-get install gdc libgmp-dev libmpc-dev libmpfr-dev binutils-dev build-essential -y
 
       - name: Download
-        run: |
-          ./download.sh
-      - name: Build
-        run: |
-          ./build-gdc.sh aarch64-none-elf; ./build-gdc.sh riscv64-unknown-elf
+        run: ./download.sh
+
+      - name: Build aarch64-none-elf
+        run: ./build-gdc.sh aarch64-none-elf
+
+      - name: Build riscv64-unknown-elf
+        run: ./build-gdc.sh riscv64-unknown-elf
 
       - name: Package
         run: |
