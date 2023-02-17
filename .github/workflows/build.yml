@@ -39,8 +39,8 @@ jobs:
 
       - name: Package
         run: |
-          ${{ matrix.tar }} -czf gnu-aarch64-none-elf-${{ matrix.os }}.tar.gz aarch64-none-elf
-          ${{ matrix.tar }} -czf gnu-riscv64-unknown-elf-${{ matrix.os }}.tar.gz riscv64-unknown-elf
+          ${{ matrix.tar }} -czf gnu-aarch64-none-elf-${{ matrix.os }}.tar.gz gnu-aarch64-none-elf
+          ${{ matrix.tar }} -czf gnu-riscv64-unknown-elf-${{ matrix.os }}.tar.gz gnu-riscv64-unknown-elf
       - name: Upload Binaries
         uses: AButler/upload-release-assets@v2.0
         with:
