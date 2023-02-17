@@ -28,7 +28,7 @@ jobs:
           which gdc
       - name: ubuntu install prerequisites
         if: matrix.os == 'linux'
-        run: sudo apt install gdc libgmp-dev libmpc-dev libmpfr-dev binutils-dev
+        run: sudo apt-get install gdc libgmp-dev libmpc-dev libmpfr-dev binutils-dev build-essential -y
 
       - name: Download
         run: |
