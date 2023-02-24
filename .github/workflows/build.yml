@@ -50,11 +50,10 @@ jobs:
         run: ./build-gdc.sh riscv64-unknown-elf
 
       - name: Package
-        run: |
-          ${{ matrix.tar }} -czf gnu-aarch64-none-elf-${{ matrix.os }}.tar.gz gnu-aarch64-none-elf
-          ${{ matrix.tar }} -czf gnu-riscv64-unknown-elf-${{ matrix.os }}.tar.gz gnu-riscv64-unknown-elf
+        run: ./package.sh
+
       - name: Upload Binaries
         uses: AButler/upload-release-assets@v2.0.2
         with:
-          files: gnu-*.tar.gz
+          files: multiplix-toolchain-linux-amd64.tar.gz
           repo-token: ${{ secrets.GITHUB_TOKEN }}

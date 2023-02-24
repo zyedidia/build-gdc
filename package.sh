@@ -1,9 +1,10 @@
 #!/bin/bash
 
-mkdir multiplix-toolchain
-mv gnu-aarch64-none-elf multiplix-toolchain
-mv gnu-riscv64-unknown-elf multiplix-toolchain
-mv ldc2 multiplix-toolchain
-mv bin multiplix-toolchain
+TOOLCHAIN=multiplix-toolchain-linux-amd64
+mkdir $TOOLCHAIN
+mv gnu-aarch64-none-elf $TOOLCHAIN
+mv gnu-riscv64-unknown-elf $TOOLCHAIN
+mv ldc2 $TOOLCHAIN
+mv bin $TOOLCHAIN
 
-tar -czf multiplix-toolchain.tar.gz multiplix-toolchain
+tar -czf $TOOLCHAIN.tar.gz $TOOLCHAIN
