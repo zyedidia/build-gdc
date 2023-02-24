@@ -1,3 +1,4 @@
 [submodule "newlib-cygwin"]
 	path = newlib-cygwin
 	url = https://github.com/mirror/newlib-cygwin
+	shallow = true
