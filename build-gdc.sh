@@ -36,14 +36,49 @@ build_binutils() {
   rm -rf build-binutils
 }
 
-build_gcc() {
+build_gcc1() {
   cd "$WORK_DIR"
   cd gcc
   ./contrib/download_prerequisites
   echo "Edge" > gcc/DEV-PHASE
   cd ../
-  mkdir build-gcc
-  cd build-gcc
+  mkdir build-gcc1
+  cd build-gcc1
+  env CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
+  ../gcc/configure --target=$TARGET \
+    $TARGET_CONFIG \
+    --disable-decimal-float \
+    --disable-docs \
+    --disable-gcov \
+    --disable-libffi \
+    --disable-libgomp \
+    --disable-libmudflap \
+    --disable-libquadmath \
+    --disable-libstdcxx-pch \
+    --disable-nls \
+    --disable-shared \
+    --disable-threads \
+    --enable-languages=c \
+    --enable-multilib \
+    --enable-lto \
+    --prefix="$PREFIX" \
+    --with-gnu-as \
+    --with-gnu-ld \
+    --without-headers \
+    --with-newlib \
+    --with-pkgversion="Multiplix-dev"
+
+  make all-gcc -j$(nproc --all)
+  make install-gcc -j$(nproc --all)
+  echo "Built GCC!"
+  cd ..
+  rm -rf build-gcc1
+}
+
+build_gcc2() {
+  cd $WORK_DIR
+  mkdir build-gcc2
+  cd build-gcc2
   env CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
   ../gcc/configure --target=$TARGET \
     $TARGET_CONFIG \
@@ -59,21 +94,32 @@ build_gcc() {
     --disable-shared \
     --disable-threads \
     --enable-languages=c,c++,d \
+    --enable-multilib \
+    --enable-lto \
     --prefix="$PREFIX" \
     --with-gnu-as \
     --with-gnu-ld \
     --without-headers \
     --with-newlib \
     --with-pkgversion="Multiplix-dev"
-
-  make all-gcc -j$(nproc --all)
-  make all-target-libgcc -j$(nproc --all)
-  make install-gcc -j$(nproc --all)
-  make install-target-libgcc -j$(nproc --all)
-  echo "Built GCC!"
+  make -j$(nproc --all)
+  make install -j$(nproc --all)
   cd ..
-  rm -rf build-gcc
+  rm -rf build-gcc2
 }
 
-build_binutils
-build_gcc
+build_newlib() {
+  cd "$WORK_DIR"
+  mkdir build-newlib
+  cd build-newlib
+  CFLAGS="-DPREFER_SIZE_OVER_SPEED -ffunction-sections -fdata-sections" ../newlib-cygwin/newlib/configure --prefix=$PREFIX --host=$TARGET --target=$TARGET --disable-threads --disable-newlib-io-float
+  make -j$(nproc --all)
+  make install
+  cd ..
+  rm -rf build-newlib
+}
+
+# build_binutils
+# build_gcc1
+build_newlib
+# build_gcc2
