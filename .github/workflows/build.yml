@@ -52,8 +52,14 @@ jobs:
       - name: Package
         run: ./package.sh
 
-      - name: Upload Binaries
+      - name: Upload Multiplix toolchain
         uses: AButler/upload-release-assets@v2.0.2
         with:
           files: multiplix-toolchain-linux-amd64.tar.gz
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload GNU toolchains
+        uses: AButler/upload-release-assets@v2.0.2
+        with:
+          files: gnu-*.tar.gz
           repo-token: ${{ secrets.GITHUB_TOKEN }}
