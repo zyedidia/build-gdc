@@ -3,3 +3,9 @@ binutils
 gcc
 newlib-aarch64-*
 newlib-riscv64-*
+ldc2*
+bin*
+build-newlib
+build-gcc1
+build-gcc2
+build-binutils

@@ -119,7 +119,7 @@ build_newlib() {
   rm -rf build-newlib
 }
 
-# build_binutils
-# build_gcc1
+build_binutils
+build_gcc1
 build_newlib
-# build_gcc2
+build_gcc2
