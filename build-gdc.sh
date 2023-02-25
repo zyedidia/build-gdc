@@ -6,14 +6,17 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 
+export WORK_DIR="$PWD"
+
 TARGET=$1
 
 TARGET_CONFIG=
+NEWLIB_CPPFLAGS=
 if [ $1 == "riscv64-unknown-elf" ]; then
+    NEWLIB_CPPFLAGS="-I$WORK_DIR/newlib-cygwin/newlib/libc/machine/riscv"
     TARGET_CONFIG=--with-multilib-generator='rv64imac-lp64--;--cmodel=medany'
 fi
 
-export WORK_DIR="$PWD"
 export PREFIX="$WORK_DIR/gnu-$TARGET"
 export PATH="$PREFIX/bin:$PATH"
 export OPT_FLAGS="-O3 -pipe -ffunction-sections -fdata-sections"
@@ -70,7 +73,6 @@ build_gcc1() {
 
   make all-gcc -j$(nproc --all)
   make install-gcc -j$(nproc --all)
-  echo "Built GCC!"
   cd ..
   rm -rf build-gcc1
 }
@@ -112,7 +114,7 @@ build_newlib() {
   cd "$WORK_DIR"
   mkdir build-newlib
   cd build-newlib
-  CFLAGS="-DPREFER_SIZE_OVER_SPEED -ffunction-sections -fdata-sections" ../newlib-cygwin/newlib/configure --prefix=$PREFIX --host=$TARGET --target=$TARGET --disable-threads --disable-newlib-io-float
+  CPPFLAGS=$NEWLIB_CPPFLAGS CFLAGS="-DPREFER_SIZE_OVER_SPEED -ffunction-sections -fdata-sections" ../newlib-cygwin/newlib/configure --prefix=$PREFIX --host=$TARGET --target=$TARGET --disable-newlib-io-float
   make -j$(nproc --all)
   make install
   cd ..
@@ -123,3 +125,5 @@ build_binutils
 build_gcc1
 build_newlib
 build_gcc2
+
+echo "Built GCC toolchain!"

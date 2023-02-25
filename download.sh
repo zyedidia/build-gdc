@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # binutils
 git clone git://sourceware.org/git/binutils-gdb.git -b master binutils --depth=1
 
