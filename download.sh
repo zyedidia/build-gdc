@@ -16,7 +16,7 @@ LDC=ldc2-1.30.0-linux-x86_64
 wget https://github.com/ldc-developers/ldc/releases/download/v1.30.0/$LDC.tar.xz
 tar -xf $LDC.tar.xz
 mv $LDC ldc2
-rm $LDC.tar.gz
+rm $LDC.tar.xz
 
 # dscanner
 wget www.scs.stanford.edu/~zyedidia/dscanner.tar.gz
