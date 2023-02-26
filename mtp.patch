@@ -1,0 +1,203 @@
+diff --git a/gcc/config/aarch64/aarch64-opts.h b/gcc/config/aarch64/aarch64-opts.h
+index a9f3e2715ca6f76a6610b58794907906df441a57..9d5bf77c868dc6bebb37e04764ad42a58832996b 100644
+--- a/gcc/config/aarch64/aarch64-opts.h
++++ b/gcc/config/aarch64/aarch64-opts.h
+@@ -75,6 +75,15 @@ enum aarch64_code_model {
+   AARCH64_CMODEL_LARGE
+ };
+ 
++/* The register to use as a thread pointer for TLS accesses.
++   tpidr_el0 by default, but can be changed through the -mtp option.  */
++enum aarch64_tp_reg {
++  AARCH64_TPIDR_EL0 = 0,
++  AARCH64_TPIDR_EL1 = 1,
++  AARCH64_TPIDR_EL2 = 2,
++  AARCH64_TPIDR_EL3 = 3
++};
++
+ /* SVE vector register sizes.  */
+ enum aarch64_sve_vector_bits_enum {
+   SVE_SCALABLE,
+diff --git a/gcc/config/aarch64/aarch64-protos.h b/gcc/config/aarch64/aarch64-protos.h
+index f75eb892f3daa7c2576efcedc8d944ab1e895cdb..757157f599f6d5634fe9b45885fa1b9d0b8c3454 100644
+--- a/gcc/config/aarch64/aarch64-protos.h
++++ b/gcc/config/aarch64/aarch64-protos.h
+@@ -837,6 +837,7 @@ int aarch64_movk_shift (const wide_int_ref &, const wide_int_ref &);
+ bool aarch64_is_mov_xn_imm (unsigned HOST_WIDE_INT);
+ bool aarch64_use_return_insn_p (void);
+ const char *aarch64_output_casesi (rtx *);
++const char *aarch64_output_load_tp (rtx);
+ 
+ unsigned int aarch64_tlsdesc_abi_id ();
+ enum aarch64_symbol_type aarch64_classify_symbol (rtx, HOST_WIDE_INT);
+diff --git a/gcc/config/aarch64/aarch64.cc b/gcc/config/aarch64/aarch64.cc
+index 552de301b2f9c63adcb8f56cbad166ca0b3092f2..3a2b636d948c55d6477cedc796e0bc35a257286a 100644
+--- a/gcc/config/aarch64/aarch64.cc
++++ b/gcc/config/aarch64/aarch64.cc
+@@ -281,6 +281,8 @@ private:
+ /* The current code model.  */
+ enum aarch64_code_model aarch64_cmodel;
+ 
++enum aarch64_tp_reg aarch64_tpidr_register;
++
+ /* The number of 64-bit elements in an SVE vector.  */
+ poly_uint16 aarch64_sve_vg;
+ 
+@@ -17868,6 +17870,7 @@ aarch64_override_options_internal (struct gcc_options *opts)
+ 
+   initialize_aarch64_code_model (opts);
+   initialize_aarch64_tls_size (opts);
++  aarch64_tpidr_register = opts->x_aarch64_tpidr_reg;
+ 
+   int queue_depth = 0;
+   switch (aarch64_tune_params.autoprefetcher_model)
+@@ -27452,6 +27455,20 @@ aarch64_indirect_call_asm (rtx addr)
+   return "";
+ }
+ 
++/* Emit the assembly instruction to load the thread pointer into DEST.
++   Select between different tpidr_elN registers depending on -mtp= setting.  */
++
++const char *
++aarch64_output_load_tp (rtx dest)
++{
++  const char *tpidrs[] = {"tpidr_el0", "tpidr_el1", "tpidr_el2", "tpidr_el3"};
++  char buffer[64];
++  snprintf (buffer, sizeof (buffer), "mrs\t%%0, %s",
++	    tpidrs[aarch64_tpidr_register]);
++  output_asm_insn (buffer, &dest);
++  return "";
++}
++
+ /* Target-specific selftests.  */
+ 
+ #if CHECKING_P
+diff --git a/gcc/config/aarch64/aarch64.md b/gcc/config/aarch64/aarch64.md
+index 095acf61c29b34b3aebe6407e0367a66f23a0cc3..671843c64af7ac3d98428e2d0f999520c026291b 100644
+--- a/gcc/config/aarch64/aarch64.md
++++ b/gcc/config/aarch64/aarch64.md
+@@ -7038,7 +7038,7 @@ (define_insn "aarch64_load_tp_hard"
+   [(set (match_operand:DI 0 "register_operand" "=r")
+ 	(unspec:DI [(const_int 0)] UNSPEC_TLS))]
+   ""
+-  "mrs\\t%0, tpidr_el0"
++  "* return aarch64_output_load_tp (operands[0]);"
+   [(set_attr "type" "mrs")]
+ )
+ 
+diff --git a/gcc/config/aarch64/aarch64.opt b/gcc/config/aarch64/aarch64.opt
+index 1d7967db9c0ca867fd0699370ce67b5242235c7f..025e52d40e5c52e122890f657e3cc930f164e9ea 100644
+--- a/gcc/config/aarch64/aarch64.opt
++++ b/gcc/config/aarch64/aarch64.opt
+@@ -97,6 +97,26 @@ mcmodel=
+ Target RejectNegative Joined Enum(cmodel) Var(aarch64_cmodel_var) Init(AARCH64_CMODEL_SMALL) Save
+ Specify the code model.
+ 
++Enum
++Name(tp_reg) Type(enum aarch64_tp_reg)
++The register used to access the thread pointer:
++
++EnumValue
++Enum(tp_reg) String(el0) Value(AARCH64_TPIDR_EL0)
++
++EnumValue
++Enum(tp_reg) String(el1) Value(AARCH64_TPIDR_EL1)
++
++EnumValue
++Enum(tp_reg) String(el2) Value(AARCH64_TPIDR_EL2)
++
++EnumValue
++Enum(tp_reg) String(el3) Value(AARCH64_TPIDR_EL3)
++
++mtp=
++Target RejectNegative Joined Enum(tp_reg) Var(aarch64_tpidr_reg) Init(AARCH64_TPIDR_EL0) Save
++Specify the thread pointer register.
++
+ mstrict-align
+ Target Mask(STRICT_ALIGN) Save
+ Don't assume that unaligned accesses are handled by the system.
+diff --git a/gcc/doc/invoke.texi b/gcc/doc/invoke.texi
+index 26de582e41efe1678e9aeb2f6adf88a411044697..c2eb69bdec2699da3cf901d60be09f5f623decab 100644
+--- a/gcc/doc/invoke.texi
++++ b/gcc/doc/invoke.texi
+@@ -20042,6 +20042,13 @@ addresses and sizes of sections.  Programs can be statically linked only.  The
+ @option{-mcmodel=large} option is incompatible with @option{-mabi=ilp32},
+ @option{-fpic} and @option{-fPIC}.
+ 
++@item -mtp=@var{name}
++@opindex mtp
++Specify the system register to use as a thread pointer.  The valid values
++are @samp{el0}, @samp{el1}, @samp{el2}, @samp{el3}.  These correspond to
++using the @samp{tpidr_el0}, @samp{tpidr_el1}, @samp{tpidr_el2},
++@samp{tpidr_el3} registers accordingly.  The default setting is @samp{el0}.
++
+ @item -mstrict-align
+ @itemx -mno-strict-align
+ @opindex mstrict-align
+diff --git a/gcc/testsuite/gcc.target/aarch64/mtp.x b/gcc/testsuite/gcc.target/aarch64/mtp.x
+new file mode 100644
+index 0000000000000000000000000000000000000000..d994c377fd36fe219558a0c8fe39315421a13188
+--- /dev/null
++++ b/gcc/testsuite/gcc.target/aarch64/mtp.x
+@@ -0,0 +1,8 @@
++__thread int i;
++
++int
++foo (void)
++{
++  return i;
++}
++
+diff --git a/gcc/testsuite/gcc.target/aarch64/mtp_1.c b/gcc/testsuite/gcc.target/aarch64/mtp_1.c
+new file mode 100644
+index 0000000000000000000000000000000000000000..07709d06f59de88af448182c41a4cc398e21f45d
+--- /dev/null
++++ b/gcc/testsuite/gcc.target/aarch64/mtp_1.c
+@@ -0,0 +1,7 @@
++/* { dg-do compile } */
++/* { dg-require-effective-target tls_native } */
++/* { dg-options "-O -mtp=el0" } */
++
++#include "mtp.x"
++
++/* { dg-final { scan-assembler-times {mrs\tx[0-9]+, tpidr_el0} 1 } } */
+diff --git a/gcc/testsuite/gcc.target/aarch64/mtp_2.c b/gcc/testsuite/gcc.target/aarch64/mtp_2.c
+new file mode 100644
+index 0000000000000000000000000000000000000000..60c31956906e6dbc0adff03b55a697fd6456906d
+--- /dev/null
++++ b/gcc/testsuite/gcc.target/aarch64/mtp_2.c
+@@ -0,0 +1,7 @@
++/* { dg-do compile } */
++/* { dg-require-effective-target tls_native } */
++/* { dg-options "-O -mtp=el1" } */
++
++#include "mtp.x"
++
++/* { dg-final { scan-assembler-times {mrs\tx[0-9]+, tpidr_el1} 1 } } */
+diff --git a/gcc/testsuite/gcc.target/aarch64/mtp_3.c b/gcc/testsuite/gcc.target/aarch64/mtp_3.c
+new file mode 100644
+index 0000000000000000000000000000000000000000..042ae50e43cf18c8c9366a42aff2c85a57f99598
+--- /dev/null
++++ b/gcc/testsuite/gcc.target/aarch64/mtp_3.c
+@@ -0,0 +1,7 @@
++/* { dg-do compile } */
++/* { dg-require-effective-target tls_native } */
++/* { dg-options "-O -mtp=el2" } */
++
++#include "mtp.x"
++
++/* { dg-final { scan-assembler-times {mrs\tx[0-9]+, tpidr_el2} 1 } } */
+diff --git a/gcc/testsuite/gcc.target/aarch64/mtp_4.c b/gcc/testsuite/gcc.target/aarch64/mtp_4.c
+new file mode 100644
+index 0000000000000000000000000000000000000000..e6cf3468453ff872959fc3f37cfa3befd8eebbcc
+--- /dev/null
++++ b/gcc/testsuite/gcc.target/aarch64/mtp_4.c
+@@ -0,0 +1,7 @@
++/* { dg-do compile } */
++/* { dg-require-effective-target tls_native } */
++/* { dg-options "-O -mtp=el3" } */
++
++#include "mtp.x"
++
++/* { dg-final { scan-assembler-times {mrs\tx[0-9]+, tpidr_el3} 1 } } */
+

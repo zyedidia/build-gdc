@@ -46,6 +46,7 @@ build_gcc1() {
   cd gcc
   ./contrib/download_prerequisites
   echo "Edge" > gcc/DEV-PHASE
+  patch -s -p1 < ../mtp.patch
   cd ../
   mkdir build-gcc1
   cd build-gcc1
