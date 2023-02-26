@@ -6,9 +6,12 @@ set -e
 git clone git://sourceware.org/git/binutils-gdb.git -b master binutils --depth=1
 
 # gcc
-git clone git://gcc.gnu.org/git/gcc.git -b master gcc --depth=1
+# git clone git://gcc.gnu.org/git/gcc.git -b master gcc --depth=1
+# cd gcc
+# git checkout a37a0cb303d
+# cd ..
 
-# newlib
+# newlib and gcc
 git submodule update --init
 
 # ldc

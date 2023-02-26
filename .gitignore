@@ -1,6 +1,5 @@
 gnu-*
 binutils
-gcc
 newlib-aarch64-*
 newlib-riscv64-*
 ldc2*

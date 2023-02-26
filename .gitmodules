@@ -2,3 +2,7 @@
 	path = newlib-cygwin
 	url = https://github.com/mirror/newlib-cygwin
 	shallow = true
+[submodule "gcc"]
+	path = gcc
+	url = https://github.com/gcc-mirror/gcc
+    shallow = true
