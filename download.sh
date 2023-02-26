@@ -5,14 +5,9 @@ set -e
 # binutils
 git clone git://sourceware.org/git/binutils-gdb.git -b master binutils --depth=1
 
-# gcc
-# git clone git://gcc.gnu.org/git/gcc.git -b master gcc --depth=1
-# cd gcc
-# git checkout a37a0cb303d
-# cd ..
-
 # newlib and gcc
-git submodule update --init
+git submodule init
+git submodule update --depth 1
 
 # ldc
 LDC=ldc2-1.30.0-linux-x86_64
