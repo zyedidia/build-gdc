@@ -9,10 +9,6 @@ git clone git://sourceware.org/git/binutils-gdb.git -b master binutils --depth=1
 git submodule init
 git submodule update --depth 1
 
-cd gcc
-patch -s -p1 < ../mtp.patch
-cd ..
-
 # ldc
 LDC=ldc2-1.30.0-linux-x86_64
 wget https://github.com/ldc-developers/ldc/releases/download/v1.30.0/$LDC.tar.xz
