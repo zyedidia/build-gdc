@@ -14,7 +14,7 @@ TARGET_CONFIG=
 NEWLIB_CPPFLAGS=
 NEWLIB_CFLAGS="-DPREFER_SIZE_OVER_SPEED -ffunction-sections -fdata-sections"
 if [ $1 == "riscv64-unknown-elf" ]; then
-    NEWLIB_CPPFLAGS="-I$WORK_DIR/newlib-cygwin/newlib/libc/machine/riscv"
+    NEWLIB_CPPFLAGS="-I$WORK_DIR/newlib/newlib/libc/machine/riscv"
     NEWLIB_CFLAGS="$NEWLIB_CFLAGS -march=rv64imac_zicsr_zifencei -mabi=lp64 -mcmodel=medany"
     TARGET_CONFIG=--with-multilib-generator='rv64imac-lp64--;--cmodel=medany'
 fi
@@ -45,7 +45,6 @@ build_gcc1() {
   cd "$WORK_DIR"
   cd gcc
   ./contrib/download_prerequisites
-  echo "Edge" > gcc/DEV-PHASE
   cd ../
   mkdir build-gcc1
   cd build-gcc1
@@ -116,7 +115,7 @@ build_newlib() {
   cd "$WORK_DIR"
   mkdir build-newlib
   cd build-newlib
-  CPPFLAGS=$NEWLIB_CPPFLAGS CFLAGS=$NEWLIB_CFLAGS ../newlib-cygwin/newlib/configure --prefix=$PREFIX --host=$TARGET --target=$TARGET --disable-newlib-io-float
+  CPPFLAGS=$NEWLIB_CPPFLAGS CFLAGS=$NEWLIB_CFLAGS ../newlib/newlib/configure --prefix=$PREFIX --host=$TARGET --target=$TARGET --disable-newlib-io-float
   make -j$(nproc --all)
   make install
   cd ..
